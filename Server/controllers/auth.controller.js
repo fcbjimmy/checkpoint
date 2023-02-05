@@ -35,6 +35,7 @@ const createTest = async (req, res) => {
 };
 
 const createUser = async (req, res) => {
+  console.log(req.body);
   const {
     userId,
     password,

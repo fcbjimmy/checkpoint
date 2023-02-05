@@ -1,5 +1,5 @@
 module.exports = {
-  getAllUsers: "SELECT * FROM Users",
+  getAllUsers: "SELECT * FROM Users ORDER BY Id DESC",
   createTest_query:
     "INSERT INTO Testing (Email,Password,Name) VALUES (@Email, @Password, @Name)",
   createUser_query:

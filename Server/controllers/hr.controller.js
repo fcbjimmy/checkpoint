@@ -12,6 +12,8 @@ const CustomError = require("../Error");
 // Leave type depend on the User_Group e.g. female has maternal
 //HR create/edit/delete/update leave types
 
+const update_user = async () => {};
+
 const all_user_group = async (req, res) => {
   const pool = await getConnection();
 

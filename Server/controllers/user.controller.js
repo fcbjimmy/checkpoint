@@ -47,4 +47,6 @@ const updateUserPassword = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "Password updated" });
 };
 
+
+
 module.exports = { showCurrentUser, updateUserPassword };
