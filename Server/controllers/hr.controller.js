@@ -5,14 +5,169 @@ const {
   add_user_group,
   allusergroups,
   updateusergroup,
+  createUser_query,
 } = require("../db/index");
 const CustomError = require("../Error");
+const { createTokenUser, attachCookiesToResponse } = require("../utils");
+const bcrypt = require("bcryptjs");
+
 //HR controller
 //Create User_Group create, update, delete
 // Leave type depend on the User_Group e.g. female has maternal
 //HR create/edit/delete/update leave types
 
-const update_user = async () => {};
+const add_user = async (req, res) => {
+  console.log(req.body);
+  const {
+    userId,
+    password,
+    username,
+    department,
+    user_group,
+    role,
+    features,
+    email,
+    phone,
+    supervisor,
+    approver_leaves_id,
+    annual_balance,
+    annual_prebalance,
+    sickLeave_balance,
+    sickLeave_prebalance,
+    active,
+    createBy,
+    email_notification,
+  } = req.body;
+
+  const pool = await getConnection();
+
+  const checkExistingUserId = await pool
+    .request()
+    .input("UserId", sql.NVarChar, userId)
+    .query("SELECT UserId FROM Users WHERE UserId=@UserId");
+
+  if (checkExistingUserId.recordset[0]) {
+    throw new CustomError.BadRequestError("UserId already exists");
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  const result = await pool
+    .request()
+    .input("UserId", sql.NVarChar, userId)
+    .input("Password", sql.Char, hashedPassword)
+    .input("Username", sql.NVarChar, username)
+    .input("Department", sql.NVarChar, department)
+    .input("User_Group", sql.NVarChar, user_group)
+    .input("Role", sql.NVarChar, role)
+    .input("Features", sql.NVarChar, features)
+    .input("Email", sql.NVarChar, email)
+    .input("Phone", sql.NVarChar, phone)
+    .input("Supervisor", sql.NVarChar, supervisor)
+    .input("Approver_Leaves_Id", sql.NVarChar, approver_leaves_id)
+    .input("Annual_Balance", sql.Float, annual_balance)
+    .input("Annual_Prebalance", sql.Float, annual_prebalance)
+    .input("SickLeave_Balance", sql.Float, sickLeave_balance)
+    .input("SickLeave_Prebalance", sql.Float, sickLeave_prebalance)
+    .input("Active", sql.Bit, active === "true")
+    .input("CreateDate", sql.DateTime, new Date())
+    .input("CreateBy", sql.NVarChar, createBy)
+    .input("LastLogin", sql.DateTime, new Date())
+    .input("Email_Notification", sql.Bit, email_notification === "true")
+    .query(createUser_query);
+  // // res.json(result.recordset);
+
+  const user = {
+    UserId: userId,
+    Email: email,
+    Password: hashedPassword,
+    Username: username,
+    Department: department,
+    User_Group: user_group,
+    Role: role,
+    Features: features,
+    Supervisor: supervisor,
+    Approver_Leaves_Id: approver_leaves_id,
+    Annual_Balance: annual_balance,
+    Annual_Prebalance: annual_prebalance,
+    SickLeave_Balance: sickLeave_balance,
+    SickLeave_Prebalance: sickLeave_prebalance,
+  };
+
+  const tokenUser = createTokenUser(user);
+
+  //attachcookiestoresponse
+  attachCookiesToResponse({ res, user: tokenUser });
+
+  const currentUser = await pool
+    .request()
+    .input("UserId", sql.NVarChar, userId)
+    .query("SELECT * FROM Users WHERE UserId=@UserId");
+
+  res.status(StatusCodes.OK).json({ user: currentUser.recordset[0] });
+};
+
+const edit_user = async (req, res) => {
+  const { id } = req.params;
+  const {
+    userId,
+    username,
+    department,
+    user_group,
+    role,
+    features,
+    email,
+    phone,
+    supervisor,
+    approver_leaves_id,
+    annual_balance,
+    annual_prebalance,
+    sickLeave_balance,
+    sickLeave_prebalance,
+    active,
+    email_notification,
+  } = req.body;
+
+  if (!id) {
+    throw new CustomError.BadRequestError("No user has been selected");
+  }
+
+  const pool = await getConnection();
+  const userExist = await pool
+    .request()
+    .input("Id", sql.NVarChar, id)
+    .query("SELECT * FROM Users WHERE Id=@Id");
+
+  if (userExist.rowsAffected[0] === 0) {
+    throw new CustomError.BadRequestError("User does not exist");
+  }
+
+  const result = await pool
+    .request()
+    .input("Id", sql.NVarChar, id)
+    .input("UserId", sql.NVarChar, userId)
+    .input("Username", sql.NVarChar, username)
+    .input("Department", sql.NVarChar, department)
+    .input("User_Group", sql.NVarChar, user_group)
+    .input("Role", sql.NVarChar, role)
+    .input("Features", sql.NVarChar, features)
+    .input("Email", sql.NVarChar, email)
+    .input("Phone", sql.NVarChar, phone)
+    .input("Supervisor", sql.NVarChar, supervisor)
+    .input("Approver_Leaves_Id", sql.NVarChar, approver_leaves_id)
+    .input("Annual_Balance", sql.Float, annual_balance)
+    .input("Annual_Prebalance", sql.Float, annual_prebalance)
+    .input("SickLeave_Balance", sql.Float, sickLeave_balance)
+    .input("SickLeave_Prebalance", sql.Float, sickLeave_prebalance)
+    .input("Active", sql.Bit, active === "true")
+    .input("Email_Notification", sql.Bit, email_notification === "true")
+    .query(
+      "UPDATE Users SET Username=@Username,Department=@Department,User_Group=@User_Group,Role=@Role,Features=@Features,Email=@Email,Phone=@Phone,Supervisor=@Supervisor,Approver_Leaves_Id=@Approver_Leaves_Id,Annual_Balance=@Annual_Balance,Annual_Prebalance=@Annual_Prebalance,SickLeave_Balance=@SickLeave_Balance,SickLeave_Prebalance=@SickLeave_Prebalance,Active=@Active,Email_Notification=@Email_Notification WHERE Id=@Id"
+    );
+
+  res.json({ msg: "User Edited" });
+};
 
 const all_user_group = async (req, res) => {
   const pool = await getConnection();
@@ -255,4 +410,6 @@ module.exports = {
   all_leave_type,
   edit_leave_type,
   deactivate_leave_type,
+  add_user,
+  edit_user,
 };

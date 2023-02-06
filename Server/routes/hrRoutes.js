@@ -9,11 +9,23 @@ const {
   all_leave_type,
   edit_leave_type,
   deactivate_leave_type,
+  add_user,
+  edit_user,
 } = require("../controllers/hr.controller");
 const {
   authenticateUser,
   authorizePermissions,
 } = require("../middleware/authentication");
+
+//Add user
+router
+  .route("/adduser")
+  .post([authenticateUser, authorizePermissions("HR")], add_user);
+
+//Edit User
+router
+  .route("/edituser/:id")
+  .put([authenticateUser, authorizePermissions("HR")], edit_user);
 
 //User_Groups
 router.route("/allusergroups").get(authenticateUser, all_user_group);

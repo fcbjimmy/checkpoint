@@ -6,6 +6,7 @@ module.exports = {
     "INSERT INTO Users (UserId, Password, Username, Department, User_Group, Role, Features, Email, Phone, Supervisor, Approver_Leaves_Id, Annual_Balance, Annual_Prebalance, SickLeave_Balance, SickLeave_Prebalance, Active, Createdate, CreateBy, LastLogin, Email_Notification) VALUES (@UserId, @Password, @Username, @Department, @User_Group, @Role, @Features, @Email, @Phone, @Supervisor, @Approver_Leaves_Id, @Annual_Balance, @Annual_Prebalance, @SickLeave_Balance, @SickLeave_Prebalance, @Active, @CreateDate, @CreateBy, @LastLogin, @Email_Notification)",
   get_all_user_groups: "SELECT User_Group FROM Users",
   create_leave_app: "sp_Leave_Create",
+  edit_user:"UPDATE Users SET Group_Type=@Group_Type WHERE Id=@Id",
   allusergroups: "SELECT * FROM User_Group",
   add_user_group: "INSERT INTO User_Group (Group_Type) VALUES (@Group_Type)",
   updateusergroup: "UPDATE User_Group SET Group_Type=@Group_Type WHERE Id=@Id",
