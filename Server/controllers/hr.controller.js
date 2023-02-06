@@ -95,10 +95,10 @@ const add_user = async (req, res) => {
     SickLeave_Prebalance: sickLeave_prebalance,
   };
 
-  const tokenUser = createTokenUser(user);
+  // const tokenUser = createTokenUser(user);
 
-  //attachcookiestoresponse
-  attachCookiesToResponse({ res, user: tokenUser });
+  // //attachcookiestoresponse
+  // attachCookiesToResponse({ res, user: tokenUser });
 
   const currentUser = await pool
     .request()
